@@ -81,9 +81,9 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         
-      - name: Stop and remove  container if running
-        run: |
-         docker ps -q --filter "name=streamlit_app" | grep -q . && docker stop streamlit_app && docker rm -fv streamlit_app
+      # - name: Stop and remove  container if running
+      #   run: |
+      #    docker ps -q --filter "name=streamlit_app" | grep -q . && docker stop streamlit_app && docker rm -fv streamlit_app
       
       - name: Pull latest images
         run: |
