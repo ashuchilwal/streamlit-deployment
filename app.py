@@ -224,7 +224,7 @@ def download_processed_df(df_to_download):
 
 
 def main():
-    st.title("Feature Engineering Appli")
+    st.title("Feature Engineering Application")
 
     # Upload dataset
     st.header("Upload Dataset")
