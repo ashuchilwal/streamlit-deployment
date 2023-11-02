@@ -67,6 +67,11 @@ jobs:
     needs: build-and-push-ecr-image
     runs-on: self-hosted
     steps:
+      - name: Cleanup Docker Images and Containers
+        run: |
+          docker system prune -a --volumes -f
+          docker image prune -a -f
+          
       - name: Checkout
         uses: actions/checkout@v3
 
