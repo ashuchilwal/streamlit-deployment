@@ -7,13 +7,48 @@ from sklearn.preprocessing import LabelEncoder
 import datetime as dt
 from statsmodels.tsa.stattools import adfuller
 
+# import nltk
+# nltk.download('punkt')
+# from nltk.corpus import stopwords
+
 df = None
+
 
 
 def handle_null_values(input_df):
     df = input_df.dropna()
     return df
 
+
+def convert_to_lowercase(input_df):
+    for col in input_df.columns:
+        if input_df[col].dtype == 'object':
+            input_df[col] = input_df[col].str.lower()
+    return input_df
+
+def remove_stopwords(input_df):
+    for col in input_df.columns:
+        if input_df[col].dtype == 'object':
+            input_df[col] = input_df[col].apply(stopeword_remove)
+    return input_df
+
+
+def stopeword_remove(text):
+    stop_words = set([
+                "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself",
+                "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself",
+                "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that",
+                "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having",
+                "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+                "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before",
+                "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
+                "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
+                "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+                "too", "very", "s", "t", "can", "will", "just", "don", "should", "now", "d", "ll", "m", "o", "re", "ve", "y"
+            ])
+    words = text.split()
+    cleaned_text = " ".join([word for word in words if word.lower() not in stop_words])
+    return cleaned_text
 
 def dependent_independent_feature_selection(input_df):
     st.write('Please Select Dependent and Independent Columns')
@@ -24,9 +59,9 @@ def dependent_independent_feature_selection(input_df):
     # input_df = input_df.drop(select_dependent_column, axis=1)
 
     all_columns = input_df.columns.tolist()
-    selected_columns = st.multiselect('Select', all_columns)
-    if selected_columns is not None:
-        new_df = input_df[selected_columns]
+    selected_columns_d = st.multiselect('Select', all_columns)
+    if selected_columns_d is not None:
+        new_df = input_df[selected_columns_d]
         return (new_df, select_dependent_column)
     else:
         st.warning('Please select atleast one column')
@@ -81,9 +116,9 @@ def remove_space_punctuation(df):
 
 def extract_numeric_values(df):
     st.subheader("Select columns containing numeric values:")
-    selected_columns = st.multiselect("Choose columns:", df.columns)
-    if selected_columns:
-        for col in selected_columns:
+    selected_column = st.multiselect("Choose columns:", df.columns)
+    if selected_column:
+        for col in selected_column:
             df[col] = df[col].apply(numeric_values_extract)
     return df
 
@@ -241,17 +276,25 @@ def main():
         st.sidebar.write('Original Data')
         st.sidebar.write(df_copy.head())
 
-        if st.checkbox("Regression OR Classification"):
-            df = handle_null_values(df)
+        df = handle_null_values(df)
 
-            st.subheader("Feature Selection")
-            df, dependent_column = dependent_independent_feature_selection(df)
+        if st.checkbox("Data Cleaning"):
+            if st.checkbox("Convert text into Lowercase"):
+                df = convert_to_lowercase(df)
 
             if st.checkbox('Remove Extra Spaces and Punctuation'):
                 df = remove_space_punctuation(df)
 
             if st.checkbox('Extract Numeric Values'):
                 df = extract_numeric_values(df)
+
+            if st.checkbox('Remove Stopwords'):
+                df = remove_stopwords(df)
+
+        if st.checkbox("Regression OR Classification"):
+
+            st.subheader("Feature Selection")
+            df, dependent_column = dependent_independent_feature_selection(df)
 
             if st.checkbox('Change Datatype'):
                 df = change_datatype(df)
